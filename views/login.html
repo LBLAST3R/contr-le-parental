@@ -13,9 +13,15 @@
     <form class="login-card" method="post" action="/login" autocomplete="on">
       <div class="brand">
         <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
-          <rect width="64" height="64" rx="14" fill="#0f6cbd" />
-          <path d="M32 14 44 19 V33 C44 41 39 46.5 32 49.5 C25 46.5 20 41 20 33 V19 Z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" />
-          <path d="M26 32.5 L30.5 37 L39 27.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+          <defs>
+            <linearGradient id="gLogin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2a86d8" /><stop offset="1" stop-color="#0f5aa6" />
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="15" fill="url(#gLogin)" />
+          <rect width="64" height="30" rx="15" fill="#ffffff" opacity="0.07" />
+          <path d="M32 12 L48 17 V31.5 C48 41.7 41.2 48.8 32 53 C22.8 48.8 16 41.7 16 31.5 V17 Z" fill="#ffffff" />
+          <path d="M32 42.5 C32 42.5 21 35.6 21 28.9 C21 25.7 23.5 23.1 26.6 23.1 C28.7 23.1 30.7 24.3 32 26.2 C33.3 24.3 35.3 23.1 37.4 23.1 C40.5 23.1 43 25.7 43 28.9 C43 35.6 32 42.5 32 42.5 Z" fill="#0f6cbd" />
         </svg>
         <span class="wordmark">Guardian<small>Contrôle parental</small></span>
       </div>
