@@ -34,38 +34,72 @@
   }
 
   // ---------- rendu ----------
+  function sinceText(ts) {
+    if (!ts) return "jamais";
+    const a = timeAgo(ts);
+    return a === "à l'instant" ? "à l'instant" : "il y a " + a;
+  }
+
   function renderDevices(devices) {
     const box = $("#devices");
     box.innerHTML = "";
     if (!devices.length) {
       box.innerHTML = '<p class="muted center">Aucun appareil connecté pour le moment.</p>';
+      updateConnBanner([]);
       return;
     }
     for (const d of devices) {
       const st = d.status || {};
       const used = st.used_minutes || 0, quota = st.quota || 1;
       const pct = Math.min(100, Math.round((used / quota) * 100));
-      const card = el("div", "device");
-      const warn = pct >= 80 ? " warn" : "";
       const locked = !!st.lockdown;
-      const badge = locked
-        ? '<span class="badge locked">verrouillé</span>'
-        : `<span class="badge ${d.online ? "on" : "off"}">${d.online ? "actif" : "hors ligne"}</span>`;
+      const online = !!d.online;
       const name = d.name || d.device_id;
       const initial = escapeHtml((name.trim()[0] || "?").toUpperCase());
+      const presence = locked ? "locked" : (online ? "on" : "off");
+      const statusCls = locked ? "locked" : (online ? "online" : "offline");
+      const statusTxt = locked ? "Verrouillé" : (online ? "En ligne" : "Hors ligne");
+      const stale = !online && !locked;
+      const card = el("div", "member");
       card.innerHTML = `
-        <div class="device-head">
-          <span class="device-name"><span class="avatar">${initial}</span>${escapeHtml(name)}</span>
-          ${badge}
-        </div>
-        <div class="meter${warn}"><i style="width:${pct}%"></i></div>
-        <div class="device-sub">
-          <span>${used} / ${quota} min aujourd'hui</span>
-          <span>${st.foreground ? escapeHtml(st.foreground) : "—"}</span>
+        <div class="m-avatar">${initial}<span class="presence ${presence}"></span></div>
+        <div class="m-body">
+          <div class="m-top">
+            <span class="m-name">${escapeHtml(name)}</span>
+            <span class="status ${statusCls}"><span class="s-dot"></span>${statusTxt}</span>
+          </div>
+          <div class="m-seen${stale ? " stale" : ""}">Dernier contact : ${sinceText(d.last_seen)}</div>
+          <div class="m-screen">
+            <div class="m-screen-head"><span>Temps d'écran aujourd'hui</span><span><b>${used}</b> / ${quota} min</span></div>
+            <div class="bar${pct >= 80 ? " warn" : ""}"><i style="width:${pct}%"></i></div>
+          </div>
+          <div class="m-foot">
+            <span class="m-fg">${st.foreground ? escapeHtml(st.foreground) : "—"}</span>
+            <span class="m-open">Détails ›</span>
+          </div>
         </div>`;
       card.addEventListener("click", () => openSheet(d));
       box.appendChild(card);
     }
+    updateConnBanner(devices);
+  }
+
+  // Bannière "injoignable" : possible contournement (ou PC éteint). Seuil 5 min.
+  function updateConnBanner(devices) {
+    const banner = $("#conn-banner");
+    const now = Date.now() / 1000;
+    const off = devices.filter((d) => !(d.status && d.status.lockdown) && (now - (d.last_seen || 0)) > 300);
+    if (!off.length) { banner.classList.add("hidden"); return; }
+    let msg;
+    if (off.length === 1) {
+      const d = off[0];
+      msg = `<b>${escapeHtml(d.name || d.device_id)}</b> est injoignable (dernier contact ${sinceText(d.last_seen)}). ` +
+        "Le PC est éteint, ou la protection a peut-être été contournée — à vérifier.";
+    } else {
+      msg = `<b>${off.length} appareils</b> sont injoignables. PC éteints, ou protection contournée — à vérifier.`;
+    }
+    $("#conn-banner-text").innerHTML = msg;
+    banner.classList.remove("hidden");
   }
 
   function renderSummary(o) {
@@ -141,9 +175,14 @@
     const st = (data.device && data.device.status) || {};
     const quota = st.quota || 180;
     const locked = !!st.lockdown;
+    const online = !!data.device.online;
+    const statusCls = locked ? "locked" : (online ? "online" : "offline");
+    const statusTxt = locked ? "Verrouillé" : (online ? "En ligne" : "Hors ligne");
     const badge = $("#sheet-status");
-    badge.textContent = locked ? "VERROUILLÉ" : (data.device.online ? "actif" : "hors ligne");
-    badge.className = "badge " + (locked ? "locked" : (data.device.online ? "on" : "off"));
+    badge.textContent = statusTxt;
+    badge.className = "status " + statusCls;
+    const connLine = `<div class="conn-line"><span class="s-dot ${locked ? "locked" : (online ? "on" : "off")}"></span>` +
+      `${statusTxt} · dernier contact ${sinceText(data.device.last_seen)}</div>`;
 
     // Barres d'historique (temps par jour vs quota)
     let hist = "";
@@ -167,6 +206,7 @@
     if (!top) top = '<span class="muted" style="font-size:.8rem">Aucune donnée d\'app aujourd\'hui.</span>';
 
     $("#sheet-detail").innerHTML = `
+      ${connLine}
       <div class="now">
         <span>Aujourd'hui : <b>${st.used_minutes ?? 0}</b> / ${quota} min</span>
         <span>Au 1er plan : <b>${escapeHtml(st.foreground || "—")}</b></span>

@@ -3,19 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#4652c9" />
+  <meta name="theme-color" content="#0f6cbd" />
   <title>Guardian — Contrôle parental</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="14" fill="#4652c9" />
+        <rect width="64" height="64" rx="14" fill="#0f6cbd" />
         <path d="M32 14 44 19 V33 C44 41 39 46.5 32 49.5 C25 46.5 20 41 20 33 V19 Z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" />
         <path d="M26 32.5 L30.5 37 L39 27.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
@@ -32,40 +29,40 @@
     </div>
   </header>
 
-  <main id="app" class="workspace">
-    <!-- Rail latéral (desktop) / barre de filtres (mobile) -->
-    <aside class="rail" id="filters">
-      <div class="rail-label">Affichage</div>
-      <button class="chip active" data-sev="">Toute l'activité</button>
-      <button class="chip" data-sev="HIGH">Alertes</button>
-      <button class="chip" data-sev="MEDIUM">À surveiller</button>
-    </aside>
+  <main id="app" class="page">
+    <!-- Alerte connexion : PC injoignable / contournement possible -->
+    <div id="conn-banner" class="conn-banner hidden">
+      <svg class="cb-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div id="conn-banner-text"></div>
+    </div>
 
-    <section class="content">
-      <!-- Résumé -->
-      <section class="summary">
-        <div class="stat"><span id="stat-high" class="stat-num high">0</span><span class="stat-lbl">alertes · 24 h</span></div>
-        <div class="stat"><span id="stat-med" class="stat-num med">0</span><span class="stat-lbl">à surveiller · 24 h</span></div>
-        <div class="stat"><span id="stat-crit" class="stat-num high">0</span><span class="stat-lbl">alertes · 7 jours</span></div>
-      </section>
+    <!-- Cartes membres / appareils -->
+    <section id="devices" class="members"><p class="muted">Chargement…</p></section>
 
-      <!-- Appareils -->
-      <section>
-        <h2 class="section-title">Appareils</h2>
-        <section id="devices" class="devices"><p class="muted">Chargement…</p></section>
-      </section>
-
-      <!-- Activité -->
-      <section>
-        <h2 class="section-title">Activité récente</h2>
-        <section id="feed" class="feed"><p class="muted">Chargement…</p></section>
-      </section>
-
-      <p class="foot-note">
-        Conforme à la charte : seuls des agrégats, des métadonnées et les extraits
-        déclencheurs sont visibles. Aucune lecture continue des conversations.
-      </p>
+    <!-- Résumé -->
+    <section class="summary">
+      <div class="stat"><span id="stat-high" class="stat-num high">0</span><span class="stat-lbl">alertes · 24 h</span></div>
+      <div class="stat"><span id="stat-med" class="stat-num med">0</span><span class="stat-lbl">à surveiller · 24 h</span></div>
+      <div class="stat"><span id="stat-crit" class="stat-num high">0</span><span class="stat-lbl">alertes · 7 jours</span></div>
     </section>
+
+    <!-- Activité + pivots -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Activité récente</h2>
+        <nav class="pivots" id="filters" role="tablist">
+          <button class="chip active" data-sev="" role="tab">Tout</button>
+          <button class="chip" data-sev="HIGH" role="tab">Alertes</button>
+          <button class="chip" data-sev="MEDIUM" role="tab">À surveiller</button>
+        </nav>
+      </div>
+      <div id="feed" class="feed"><p class="muted center">Chargement…</p></div>
+    </section>
+
+    <p class="foot-note">
+      Conforme à la charte : seuls des agrégats, des métadonnées et les extraits
+      déclencheurs sont visibles. Aucune lecture continue des conversations.
+    </p>
   </main>
 
   <!-- Panneau détail + actions (tiroir à droite sur PC, feuille en bas sur mobile) -->
@@ -74,7 +71,7 @@
       <div class="handle" aria-hidden="true"></div>
       <div class="sheet-head">
         <h3 id="sheet-title">Appareil</h3>
-        <span id="sheet-status" class="badge off">—</span>
+        <span id="sheet-status" class="status offline">—</span>
       </div>
 
       <div id="sheet-detail" class="detail"><p class="muted center">Chargement…</p></div>
