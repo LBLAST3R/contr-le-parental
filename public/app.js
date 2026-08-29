@@ -49,11 +49,13 @@
       const warn = pct >= 80 ? " warn" : "";
       const locked = !!st.lockdown;
       const badge = locked
-        ? '<span class="badge locked">🔒 verrouillé</span>'
+        ? '<span class="badge locked">verrouillé</span>'
         : `<span class="badge ${d.online ? "on" : "off"}">${d.online ? "actif" : "hors ligne"}</span>`;
+      const name = d.name || d.device_id;
+      const initial = escapeHtml((name.trim()[0] || "?").toUpperCase());
       card.innerHTML = `
         <div class="device-head">
-          <span class="device-name"><span class="brand-mark"></span>${escapeHtml(d.name || d.device_id)}</span>
+          <span class="device-name"><span class="avatar">${initial}</span>${escapeHtml(name)}</span>
           ${badge}
         </div>
         <div class="meter${warn}"><i style="width:${pct}%"></i></div>
@@ -75,7 +77,7 @@
   function renderFeed(events) {
     const feed = $("#feed");
     feed.innerHTML = "";
-    if (!events.length) { feed.innerHTML = '<p class="muted center">Rien à signaler. 🌿</p>'; return; }
+    if (!events.length) { feed.innerHTML = '<p class="muted center">Rien à signaler pour le moment.</p>'; return; }
     let distress = false;
     for (const e of events) {
       if (e.severity === "CRITICAL") distress = true;

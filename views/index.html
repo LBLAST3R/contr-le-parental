@@ -3,57 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f766e" />
-  <title>Guardian — surveillance</title>
+  <meta name="theme-color" content="#4652c9" />
+  <title>Guardian — Contrôle parental</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <!-- Application (l'accès est déjà protégé côté serveur par la session parent) -->
-  <main id="app">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark"></span> Guardian</div>
-      <div class="topbar-actions">
-        <span id="conn-dot" class="dot" title="état serveur"></span>
-        <button id="refresh-btn" class="icon-btn" title="Rafraîchir">⟳</button>
-        <button id="logout-btn" class="icon-btn" title="Se déconnecter">⎋</button>
-      </div>
-    </header>
-
-    <!-- Bandeau détresse (masqué par défaut) -->
-    <div id="distress-banner" class="distress hidden">
-      <strong>Signal de détresse détecté.</strong>
-      Prenez contact tout de suite. 3114 — 24h/24, gratuit.
-      <button id="distress-dismiss" class="link">masquer</button>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#4652c9" />
+        <path d="M32 14 44 19 V33 C44 41 39 46.5 32 49.5 C25 46.5 20 41 20 33 V19 Z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" />
+        <path d="M26 32.5 L30.5 37 L39 27.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span class="wordmark">Guardian<small>Contrôle parental</small></span>
     </div>
+    <div class="topbar-actions">
+      <span class="conn"><span id="conn-dot" class="dot" title="Connexion au serveur"></span></span>
+      <button id="refresh-btn" class="icon-btn" title="Rafraîchir" aria-label="Rafraîchir">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button id="logout-btn" class="icon-btn" title="Se déconnecter" aria-label="Se déconnecter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </header>
 
-    <!-- Cartes appareils -->
-    <section id="devices" class="devices"></section>
-
-    <!-- Résumé chiffré -->
-    <section class="summary">
-      <div class="stat"><span id="stat-crit" class="stat-num crit">0</span><span class="stat-lbl">détresse 7j</span></div>
-      <div class="stat"><span id="stat-high" class="stat-num high">0</span><span class="stat-lbl">alertes 24h</span></div>
-      <div class="stat"><span id="stat-med" class="stat-num med">0</span><span class="stat-lbl">à surveiller 24h</span></div>
-    </section>
-
-    <!-- Filtres -->
-    <nav class="filters" id="filters">
-      <button class="chip active" data-sev="">Tout</button>
+  <main id="app" class="workspace">
+    <!-- Rail latéral (desktop) / barre de filtres (mobile) -->
+    <aside class="rail" id="filters">
+      <div class="rail-label">Affichage</div>
+      <button class="chip active" data-sev="">Toute l'activité</button>
       <button class="chip" data-sev="MEDIUM">À surveiller</button>
       <button class="chip" data-sev="HIGH">Alertes</button>
       <button class="chip" data-sev="CRITICAL">Détresse</button>
-    </nav>
+      <p class="rail-help">Besoin d'aide immédiate ?<br /><b>3114</b> — 24h/24, gratuit.</p>
+    </aside>
 
-    <!-- Flux d'événements -->
-    <section id="feed" class="feed"><p class="muted center">Chargement…</p></section>
+    <section class="content">
+      <!-- Bandeau détresse -->
+      <div id="distress-banner" class="distress hidden">
+        <svg class="d-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>Signal de détresse détecté.</strong>
+          Prenez contact tout de suite. 3114 — 24h/24, gratuit.
+        </div>
+        <button id="distress-dismiss" class="link">masquer</button>
+      </div>
 
-    <p class="privacy muted">
-      Conforme à la charte : seuls des agrégats, des métadonnées et les extraits
-      déclencheurs sont visibles. Aucune lecture continue des conversations.
-    </p>
+      <!-- Résumé -->
+      <section class="summary">
+        <div class="stat"><span id="stat-crit" class="stat-num crit">0</span><span class="stat-lbl">détresse · 7 jours</span></div>
+        <div class="stat"><span id="stat-high" class="stat-num high">0</span><span class="stat-lbl">alertes · 24 h</span></div>
+        <div class="stat"><span id="stat-med" class="stat-num med">0</span><span class="stat-lbl">à surveiller · 24 h</span></div>
+      </section>
+
+      <!-- Appareils -->
+      <section>
+        <h2 class="section-title">Appareils</h2>
+        <section id="devices" class="devices"><p class="muted">Chargement…</p></section>
+      </section>
+
+      <!-- Activité -->
+      <section>
+        <h2 class="section-title">Activité récente</h2>
+        <section id="feed" class="feed"><p class="muted">Chargement…</p></section>
+      </section>
+
+      <p class="foot-note">
+        Conforme à la charte : seuls des agrégats, des métadonnées et les extraits
+        déclencheurs sont visibles. Aucune lecture continue des conversations.
+      </p>
+    </section>
   </main>
 
-  <!-- Fenêtre détail + actions appareil -->
+  <!-- Panneau détail + actions (tiroir à droite sur PC, feuille en bas sur mobile) -->
   <div id="sheet" class="sheet hidden">
     <div class="sheet-card">
       <div class="handle" aria-hidden="true"></div>
@@ -73,18 +100,19 @@
 
       <div class="lbl">Message sur son écran</div>
       <textarea id="msg-input" placeholder="Message à afficher tout de suite…"></textarea>
-      <button id="msg-send" class="btn btn-primary">Envoyer le message</button>
+      <button id="msg-send" class="btn primary">Envoyer le message</button>
 
-      <div class="lbl danger-lbl">⚠️ Urgence</div>
+      <div class="lbl danger-lbl">Urgence</div>
       <div class="emergency">
-        <button id="lockdown-on" class="btn btn-danger">🔒 Verrouiller entièrement le PC</button>
-        <button id="lockdown-off" class="btn btn-ok">🔓 Rouvrir le PC</button>
+        <button id="lockdown-on" class="btn danger">Verrouiller entièrement le PC</button>
+        <button id="lockdown-off" class="btn ok">Rouvrir le PC</button>
         <div class="emergency-row">
-          <button id="lock-now" class="btn btn-ghost">Verrouiller une fois</button>
-          <button id="shutdown" class="btn btn-ghost">Éteindre</button>
+          <button id="lock-now" class="btn ghost">Verrouiller une fois</button>
+          <button id="shutdown" class="btn ghost">Éteindre</button>
         </div>
       </div>
-      <button id="sheet-close" class="btn btn-ghost">Fermer</button>
+      <div class="lbl">&nbsp;</div>
+      <button id="sheet-close" class="btn ghost">Fermer</button>
     </div>
   </div>
 
