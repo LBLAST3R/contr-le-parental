@@ -38,12 +38,8 @@ const config = {
   HEARTBEAT_TIMEOUT_SECONDS: parseInt(process.env.HEARTBEAT_TIMEOUT_SECONDS || "600", 10),
   TELEGRAM_BOT_TOKEN: (process.env.TELEGRAM_BOT_TOKEN || "").trim(),
   TELEGRAM_ALERT_CHATS: csv("TELEGRAM_ALERT_CHATS"),
-  TELEGRAM_DISTRESS_CHATS: csv("TELEGRAM_DISTRESS_CHATS"),
 };
 config.TELEGRAM_ENABLED = Boolean(config.TELEGRAM_BOT_TOKEN && config.TELEGRAM_ALERT_CHATS.length);
-if (config.TELEGRAM_DISTRESS_CHATS.length === 0) {
-  config.TELEGRAM_DISTRESS_CHATS = config.TELEGRAM_ALERT_CHATS;
-}
 
 // Avertissements de sécurité au démarrage
 if (!config.PARENT_PASSWORD) {

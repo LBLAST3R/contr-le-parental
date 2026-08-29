@@ -27,7 +27,7 @@ native (stockage JSON), donc `npm install` suffit.
 ## Fonctionnalités
 
 - Vue d'ensemble des appareils (en ligne, temps d'écran, app au 1er plan).
-- Flux d'alertes (paiement, manipulation, **détresse**, contournement…) filtrable.
+- Flux d'alertes (paiement, manipulation, contournement…) filtrable.
 - Détail par appareil : historique 7 jours, top applications.
 - Actions : accorder du temps, message à l'écran, **verrouiller entièrement le
   PC / le rouvrir / l'éteindre** à distance.

@@ -69,18 +69,17 @@
   }
 
   function renderSummary(o) {
-    $("#stat-crit").textContent = o.counts_7d.CRITICAL || 0;
+    const c7 = o.counts_7d || {};
     $("#stat-high").textContent = o.counts_24h.HIGH || 0;
     $("#stat-med").textContent = o.counts_24h.MEDIUM || 0;
+    $("#stat-crit").textContent = (c7.HIGH || 0) + (c7.MEDIUM || 0) + (c7.CRITICAL || 0);
   }
 
   function renderFeed(events) {
     const feed = $("#feed");
     feed.innerHTML = "";
     if (!events.length) { feed.innerHTML = '<p class="muted center">Rien à signaler pour le moment.</p>'; return; }
-    let distress = false;
     for (const e of events) {
-      if (e.severity === "CRITICAL") distress = true;
       const card = el("div", `event sev-${e.severity}${e.ack ? " acked" : ""}`);
       card.innerHTML = `
         <div class="event-head">
@@ -101,7 +100,6 @@
       }
       feed.appendChild(card);
     }
-    $("#distress-banner").classList.toggle("hidden", !distress);
   }
 
   function escapeHtml(s) {
@@ -199,7 +197,6 @@
   $("#refresh-btn").addEventListener("click", refresh);
   $("#logout-btn").addEventListener("click", logout);
   $("#sheet-close").addEventListener("click", closeSheet);
-  $("#distress-dismiss").addEventListener("click", () => $("#distress-banner").classList.add("hidden"));
   $("#lock-now").addEventListener("click", async () => {
     await api(`/api/dashboard/lock?device_id=${encodeURIComponent(currentDevice)}`, { method: "POST" });
     toast("Verrouillage demandé"); closeSheet();

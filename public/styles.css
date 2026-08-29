@@ -169,17 +169,6 @@ button { font-family: inherit; }
   background: var(--surface-3); border-radius: 999px; padding: .1rem .5rem;
 }
 
-/* --------- bandeau détresse --------- */
-.distress {
-  display: flex; align-items: flex-start; gap: .75rem;
-  background: var(--crit-soft); color: var(--ink);
-  border: 1px solid color-mix(in srgb, var(--crit) 35%, var(--border));
-  border-left: 4px solid var(--crit);
-  border-radius: var(--radius); padding: .95rem 1.1rem; box-shadow: var(--shadow-sm);
-}
-.distress .d-ico { color: var(--crit); flex: none; margin-top: 1px; }
-.distress strong { display: block; color: var(--crit); }
-.distress .link { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: .82rem; text-decoration: underline; }
 
 /* --------- tuiles de résumé --------- */
 .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }

@@ -37,28 +37,16 @@
     <aside class="rail" id="filters">
       <div class="rail-label">Affichage</div>
       <button class="chip active" data-sev="">Toute l'activité</button>
-      <button class="chip" data-sev="MEDIUM">À surveiller</button>
       <button class="chip" data-sev="HIGH">Alertes</button>
-      <button class="chip" data-sev="CRITICAL">Détresse</button>
-      <p class="rail-help">Besoin d'aide immédiate ?<br /><b>3114</b> — 24h/24, gratuit.</p>
+      <button class="chip" data-sev="MEDIUM">À surveiller</button>
     </aside>
 
     <section class="content">
-      <!-- Bandeau détresse -->
-      <div id="distress-banner" class="distress hidden">
-        <svg class="d-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <div>
-          <strong>Signal de détresse détecté.</strong>
-          Prenez contact tout de suite. 3114 — 24h/24, gratuit.
-        </div>
-        <button id="distress-dismiss" class="link">masquer</button>
-      </div>
-
       <!-- Résumé -->
       <section class="summary">
-        <div class="stat"><span id="stat-crit" class="stat-num crit">0</span><span class="stat-lbl">détresse · 7 jours</span></div>
         <div class="stat"><span id="stat-high" class="stat-num high">0</span><span class="stat-lbl">alertes · 24 h</span></div>
         <div class="stat"><span id="stat-med" class="stat-num med">0</span><span class="stat-lbl">à surveiller · 24 h</span></div>
+        <div class="stat"><span id="stat-crit" class="stat-num high">0</span><span class="stat-lbl">alertes · 7 jours</span></div>
       </section>
 
       <!-- Appareils -->

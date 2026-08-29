@@ -30,13 +30,9 @@ const EMOJI = { CRITICAL: "🆘", HIGH: "🔴", MEDIUM: "🟠", LOW: "🟡" };
 async function sendEvent(ev) {
   if (!config.TELEGRAM_ENABLED) return;
   if (ev.severity === "LOW") return;
-  let text =
+  const text =
     `${EMOJI[ev.severity] || "•"} <b>${esc(ev.title)}</b>\n${esc(ev.detail)}\n\n<i>${esc(ev.device_id)}</i>`;
   const chats = new Set(config.TELEGRAM_ALERT_CHATS);
-  if (ev.channel === "distress") {
-    for (const c of config.TELEGRAM_DISTRESS_CHATS) chats.add(c);
-    text = "🆘 <b>PRIORITÉ — DÉTRESSE</b>\n" + text + "\n\n3114 — 24h/24, gratuit.";
-  }
   let reply_markup;
   if (ev.kind === "child_request" || ev.kind === "payment_page") {
     const dev = ev.device_id;
