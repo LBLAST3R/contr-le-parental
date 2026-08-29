@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - name: Vérifier la syntaxe des sources
+        run: |
+          node --check server.js
+          for f in src/*.js src/routes/*.js public/*.js; do node --check "$f"; done
+      - name: Démarrage à blanc (health check)
+        env:
+          PARENT_PASSWORD: ci-test
+          AGENT_API_KEY: ci-agent-key
+          SESSION_SECRET: ci-session-secret
+          PORT: "3000"
+        run: |
+          node server.js &
+          PID=$!
+          sleep 2
+          curl -sf http://127.0.0.1:3000/api/health
+          kill $PID

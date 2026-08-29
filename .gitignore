@@ -1,0 +1,15 @@
+# Secrets & données — JAMAIS commités (le mot de passe des parents vit ici)
+.env
+data/
+*.db
+*.db-*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Divers
+.DS_Store
+Thumbs.db
+*.log
