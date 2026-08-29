@@ -70,7 +70,7 @@
           </div>
           <div class="m-seen${stale ? " stale" : ""}">Dernier contact : ${sinceText(d.last_seen)}</div>
           <div class="m-screen">
-            <div class="m-screen-head"><span>Temps d'écran aujourd'hui</span><span><b>${used}</b> / ${quota} min</span></div>
+            <div class="m-screen-head"><span>Temps d'écran</span><span><b>${used}</b>&nbsp;/&nbsp;${quota} min</span></div>
             <div class="bar${pct >= 80 ? " warn" : ""}"><i style="width:${pct}%"></i></div>
           </div>
           <div class="m-foot">
@@ -141,17 +141,25 @@
   }
 
   // ---------- data ----------
+  function setConn(state, label) {
+    $("#conn-dot").className = "dot" + (state ? " " + state : "");
+    $("#conn-label").textContent = label;
+  }
   async function refresh() {
     try {
       const o = await api("/api/dashboard/overview");
       renderDevices(o.devices);
       renderSummary(o);
-      $("#conn-dot").className = "dot on";
+      // La LED reflète l'état du PC surveillé, PAS la liaison au serveur.
+      const anyOnline = o.devices.some((d) => d.online);
+      if (anyOnline) setConn("on", "PC en ligne");
+      else if (o.devices.length) setConn("", "PC hors ligne");
+      else setConn("", "Aucun appareil");
       const q = currentSev ? `?min_severity=${currentSev}&limit=150` : "?limit=150";
       const ev = await api("/api/dashboard/events" + q);
       renderFeed(ev.events);
     } catch (e) {
-      if (e.message !== "unauthorized") $("#conn-dot").className = "dot off";
+      if (e.message !== "unauthorized") setConn("off", "Serveur injoignable");
     }
   }
 
