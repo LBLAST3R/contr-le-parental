@@ -5,6 +5,8 @@ const express = require("express");
 const multer = require("multer");
 const store = require("../store");
 const updates = require("../updates");
+const deviceconfig = require("../deviceconfig");
+const screens = require("../screens");
 const { requireParent } = require("../auth");
 
 const router = express.Router();
@@ -74,6 +76,35 @@ router.post("/lockdown", (req, res) => {
 router.post("/shutdown", (req, res) => {
   const id = store.pushCommand(req.query.device_id, "shutdown", {});
   res.json({ ok: true, command_id: id });
+});
+
+// ---- Réglages pilotés depuis l'app ----
+router.get("/config/:id", (req, res) => {
+  res.json(deviceconfig.getConfig(req.params.id));
+});
+
+router.post("/config/:id", (req, res) => {
+  const cfg = deviceconfig.setConfig(req.params.id, req.body || {});
+  // Demande à l'agent de tirer les nouveaux réglages tout de suite.
+  store.pushCommand(req.params.id, "config_updated", {});
+  res.json({ ok: true, config: cfg });
+});
+
+// ---- Capture d'écran à la demande ----
+router.post("/screenshot/:id", (req, res) => {
+  const cid = store.pushCommand(req.params.id, "screenshot", {});
+  res.json({ ok: true, command_id: cid });
+});
+
+router.get("/screenshot/:id/meta", (req, res) => {
+  res.json(screens.latestMeta(req.params.id));
+});
+
+router.get("/screenshot/:id", (req, res) => {
+  const p = screens.latestPath(req.params.id);
+  if (!p) return res.status(404).json({ error: "Aucune capture" });
+  res.setHeader("Cache-Control", "no-store");
+  res.sendFile(p);
 });
 
 router.get("/update", (req, res) => {

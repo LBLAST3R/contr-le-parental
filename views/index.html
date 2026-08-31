@@ -82,6 +82,19 @@
 
       <div id="sheet-detail" class="detail"><p class="muted center">Chargement…</p></div>
 
+      <div class="lbl">Surveillance</div>
+      <div class="sheet-actions" style="grid-template-columns:1fr 1fr">
+        <button id="see-screen" class="btn">Voir l'écran</button>
+        <button id="open-settings" class="btn">Réglages</button>
+      </div>
+      <div id="screen-view" class="screen-view hidden">
+        <div class="screen-bar">
+          <span id="screen-status" class="muted">…</span>
+          <label class="live-toggle"><input type="checkbox" id="screen-live" /> Direct</label>
+        </div>
+        <img id="screen-img" class="screen-img" alt="Écran de l'appareil" />
+      </div>
+
       <div class="lbl">Accorder du temps</div>
       <div class="sheet-actions">
         <button class="btn" data-grant="15">+15 min</button>
@@ -104,6 +117,43 @@
       </div>
       <div class="lbl">&nbsp;</div>
       <button id="sheet-close" class="btn ghost">Fermer</button>
+    </div>
+  </div>
+
+  <!-- Panneau de réglages (pilotage complet de l'appareil) -->
+  <div id="settings" class="sheet hidden">
+    <div class="sheet-card">
+      <div class="handle" aria-hidden="true"></div>
+      <div class="sheet-head"><h3>Réglages — <span id="set-name"></span></h3></div>
+
+      <div class="set-grid">
+        <label class="field">Limite de temps d'écran par jour
+          <span class="field-row"><input type="number" id="set-daily" min="0" max="1440" step="10" /> min</span>
+        </label>
+        <label class="field">Heure du coucher (blocage)
+          <input type="time" id="set-bed-start" />
+        </label>
+        <label class="field">Fin du coucher (réveil)
+          <input type="time" id="set-bed-end" />
+        </label>
+      </div>
+
+      <div class="lbl">Protections actives</div>
+      <div class="toggles">
+        <label class="tg"><input type="checkbox" id="set-block-pay" /> <span>Bloquer les pages de paiement / achat</span></label>
+        <label class="tg"><input type="checkbox" id="set-block-sites" /> <span>Bloquer les sites interdits (Discord, VPN…)</span></label>
+        <label class="tg"><input type="checkbox" id="set-kill" /> <span>Fermer les applications interdites</span></label>
+        <label class="tg"><input type="checkbox" id="set-textscan" /> <span>Détecter la manipulation dans le texte</span></label>
+        <label class="tg"><input type="checkbox" id="set-firewall" /> <span>Bloquer le réseau des applis interdites (pare-feu)</span></label>
+        <label class="tg"><input type="checkbox" id="set-allowlist" /> <span>Mode liste blanche (n'autoriser que les applis choisies)</span></label>
+        <label class="tg"><input type="checkbox" id="set-screens" /> <span>Autoriser « Voir l'écran »</span></label>
+      </div>
+
+      <div class="lbl">Applications interdites en plus (une par ligne, ex. steam)</div>
+      <textarea id="set-blocklist" placeholder="steam&#10;roblox"></textarea>
+
+      <button id="set-save" class="btn primary">Enregistrer les réglages</button>
+      <button id="set-close" class="btn ghost">Fermer</button>
     </div>
   </div>
 

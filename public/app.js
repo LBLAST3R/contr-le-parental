@@ -9,6 +9,8 @@
 
   const $ = (s) => document.querySelector(s);
   const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
+  const enc = encodeURIComponent;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   async function api(path, opts = {}) {
     const headers = Object.assign({}, opts.headers || {});
@@ -166,6 +168,8 @@
   // ---------- sheet ----------
   async function openSheet(d) {
     currentDevice = d.device_id;
+    stopScreen();
+    $("#screen-img").removeAttribute("src");
     $("#sheet-title").textContent = d.name || d.device_id;
     $("#sheet-detail").innerHTML = '<p class="muted center">Chargement…</p>';
     $("#sheet").classList.remove("hidden");
@@ -176,7 +180,7 @@
       $("#sheet-detail").innerHTML = '<p class="muted center">Détail indisponible.</p>';
     }
   }
-  function closeSheet() { $("#sheet").classList.add("hidden"); currentDevice = null; }
+  function closeSheet() { stopScreen(); $("#sheet").classList.add("hidden"); }
 
   const DAYS = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
   function renderDetail(data) {
@@ -230,6 +234,75 @@
     toast(`+${minutes} min accordées`); closeSheet();
   }
 
+  // ---------- voir l'écran (à la demande / quasi-direct) ----------
+  let screenTimer = null;
+  async function requestScreen() {
+    const dev = currentDevice;
+    $("#screen-view").classList.remove("hidden");
+    $("#screen-status").textContent = "Demande envoyée au PC…";
+    let baseline = 0;
+    try { baseline = (await api(`/api/dashboard/screenshot/${enc(dev)}/meta`)).ts || 0; } catch {}
+    try { await api(`/api/dashboard/screenshot/${enc(dev)}`, { method: "POST" }); } catch {}
+    for (let i = 0; i < 12 && currentDevice === dev; i++) {
+      await sleep(1500);
+      let m; try { m = await api(`/api/dashboard/screenshot/${enc(dev)}/meta`); } catch { continue; }
+      if (m.exists && m.ts > baseline) {
+        $("#screen-img").src = `/api/dashboard/screenshot/${enc(dev)}?t=${Date.now()}`;
+        $("#screen-status").textContent = "Écran capturé à " + new Date(m.ts * 1000).toLocaleTimeString();
+        return true;
+      }
+      $("#screen-status").textContent = `En attente de l'écran… (${i + 1})`;
+    }
+    $("#screen-status").textContent = "Pas de réponse (PC éteint, appli Guardian fermée, ou capture désactivée).";
+    return false;
+  }
+  function toggleLiveScreen(on) {
+    clearInterval(screenTimer); screenTimer = null;
+    if (on) { requestScreen(); screenTimer = setInterval(requestScreen, 7000); }
+  }
+  function stopScreen() {
+    clearInterval(screenTimer); screenTimer = null;
+    const cb = $("#screen-live"); if (cb) cb.checked = false;
+    $("#screen-view").classList.add("hidden");
+  }
+
+  // ---------- réglages (pilotage de l'appareil) ----------
+  async function openSettings() {
+    const dev = currentDevice;
+    $("#set-name").textContent = dev;
+    $("#settings").classList.remove("hidden");
+    const c = await api(`/api/dashboard/config/${enc(dev)}`);
+    $("#set-daily").value = c.daily_limit_minutes;
+    $("#set-bed-start").value = c.bedtime_start;
+    $("#set-bed-end").value = c.bedtime_end;
+    $("#set-block-pay").checked = !!c.block_payments;
+    $("#set-block-sites").checked = !!c.block_blocked_sites;
+    $("#set-kill").checked = !!c.kill_blocked_processes;
+    $("#set-textscan").checked = !!c.text_scan_enabled;
+    $("#set-firewall").checked = !!c.enforce_firewall;
+    $("#set-allowlist").checked = !!c.allowlist_mode;
+    $("#set-screens").checked = !!c.allow_screenshots;
+    $("#set-blocklist").value = (c.app_blocklist_extra || []).join("\n");
+  }
+  function closeSettings() { $("#settings").classList.add("hidden"); }
+  async function saveSettings() {
+    const patch = {
+      daily_limit_minutes: parseInt($("#set-daily").value, 10) || 0,
+      bedtime_start: $("#set-bed-start").value || "22:00",
+      bedtime_end: $("#set-bed-end").value || "07:00",
+      block_payments: $("#set-block-pay").checked,
+      block_blocked_sites: $("#set-block-sites").checked,
+      kill_blocked_processes: $("#set-kill").checked,
+      text_scan_enabled: $("#set-textscan").checked,
+      enforce_firewall: $("#set-firewall").checked,
+      allowlist_mode: $("#set-allowlist").checked,
+      allow_screenshots: $("#set-screens").checked,
+      app_blocklist_extra: $("#set-blocklist").value.split("\n").map((s) => s.trim()).filter(Boolean),
+    };
+    await api(`/api/dashboard/config/${enc(currentDevice)}`, { method: "POST", body: JSON.stringify(patch) });
+    toast("Réglages enregistrés — appliqués sous ~30 s"); closeSettings();
+  }
+
   // ---------- session ----------
   function startApp() {
     refresh();
@@ -245,6 +318,12 @@
   $("#refresh-btn").addEventListener("click", refresh);
   $("#logout-btn").addEventListener("click", logout);
   $("#sheet-close").addEventListener("click", closeSheet);
+  $("#see-screen").addEventListener("click", requestScreen);
+  $("#screen-live").addEventListener("change", (e) => toggleLiveScreen(e.target.checked));
+  $("#open-settings").addEventListener("click", openSettings);
+  $("#set-save").addEventListener("click", saveSettings);
+  $("#set-close").addEventListener("click", closeSettings);
+  $("#settings").addEventListener("click", (e) => { if (e.target.id === "settings") closeSettings(); });
   $("#lock-now").addEventListener("click", async () => {
     await api(`/api/dashboard/lock?device_id=${encodeURIComponent(currentDevice)}`, { method: "POST" });
     toast("Verrouillage demandé"); closeSheet();
